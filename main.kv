@@ -1,0 +1,383 @@
+#:import platform kivy.utils.platform
+<WindowManager>
+    id: screen_manager
+
+    Seite_1:
+        id: main
+        name: "Auswahl"
+        manager: screen_manager
+
+    OpenFile:
+        id: openfile
+        name: "Ordnerübersicht"
+        manager: screen_manager
+
+    Seite_2:
+        id:data_tab
+        name: "Übersicht"
+        manager: screen_manager
+
+<Seite_1>
+    canvas.before:
+        Color:
+            rgba: 100,100,100,0.15
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    btn: btn.__self__
+    btn2:btn2.__self__
+    btn3:btn3.__self__
+    btn4:btn4.__self__
+    label:label.__self__
+    label2:label2.__self__
+    label3:label3.__self__
+    slider:slider.__self__
+    textinput:textinput.__self__
+    textinput2:textinput2.__self__
+
+    MDTopAppBar:
+        title: 'Youtube Download'
+        pos_hint:{"top":1}
+        left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
+        elevation: 2
+
+    FloatLayout:
+        Label:
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.94}
+            text: "Bitte Dateiformat auswählen :"
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        Button:
+            id: btn
+            size_hint:0.98,0.07
+            pos_hint: {"x":0.01,"top":0.81}
+            font_size: (root.width + root.height) / 8**2
+            text: "Video(mp4)"
+            on_press:
+                root.add_Dropdown(0)
+
+    FloatLayout:
+        Label:
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.82}
+            text: "Bitte Auflösung auswählen: "
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        Button:
+            id: btn2
+            disabled: False
+            size_hint:0.98,0.07
+            pos_hint: {"x":0.01, "top":0.69}
+            font_size: (root.width + root.height) / 8**2
+            text: "1080p"
+            on_press:
+                root.add_Dropdown(1)
+
+    FloatLayout:
+        Label:
+            id:label
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.70}
+            text: "Bitte Zielordner auswählen: "
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        TextInput:
+            id:textinput
+            focus:True
+            pos_hint: {"x":0.01, "top":0.57}
+            size_hint:0.66,0.07
+            multiline: False
+            font_size: (root.width + root.height) / 8**2
+
+        Button:
+            pos_hint: {"x":0.67, "top":0.569}
+            size_hint:0.32,0.07
+            font_size: (root.width + root.height) / 8**2
+            text: "Durchsuchen"
+            on_press:
+                app.change_screen("Ordnerübersicht")
+                root.setVal(0)
+
+    FloatLayout:
+        Label:
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.58}
+            text: "Bitte Modus auswählen: "
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        Button:
+            id: btn3
+            pos_hint: {"x":0.01, "top":0.45}
+            size_hint:0.98,0.07
+            font_size: (root.width + root.height) / 8**2
+            text: "einzelnes Video herunterladen"
+            on_press:
+                root.add_Dropdown(2)
+
+    FloatLayout:
+        Label:
+            id: label2
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.46}
+            text: "Bitte Link eingeben: "
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        TextInput:
+            id:textinput2
+            focus:True
+            pos_hint: {"x":0.01, "top":0.33}
+            size_hint:0.66,0.07
+            multiline: False
+            font_size: (root.width + root.height) / 8**2
+
+        Button:
+            id:btn4
+            pos_hint: {"x":0.67, "top":0.329}
+            size_hint:0.32,0.07
+            disabled: True
+            font_size: (root.width + root.height) / 8**2
+            text: "Durchsuchen"
+            on_press:
+                app.change_screen("Ordnerübersicht")
+                root.setVal(1)
+
+    FloatLayout:
+        Label:
+            size_hint_y: 0.12
+            pos_hint: {"x":0.01, "top":0.34}
+            text: "Treffer: "
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"left"
+
+        Slider:
+            id:slider
+            pos_hint: {"x":0.01, "top":0.22}
+            size_hint:0.98,0.07
+            disabled: True
+            min:1
+            max:10
+            step:1
+            orientation: "horizontal"
+
+        Label:
+            id:label3
+            disabled: True
+            size_hint:0.1,0.12
+            pos_hint: {"x":0.5, "top":0.32}
+            font_size: (root.width + root.height) / 8**2
+            text:str(slider.value)
+            text_size:self.size
+
+        MDFloatingActionButton:
+            icon: 'arrow-right'
+            size_hint_y: 0.06
+            width:self.height
+            pos_hint: {"x":0.46, "top":0.13}
+            on_press:
+                root.check_entry()
+                if root.checked: app.add_datatable(root.getData())
+
+    MDNavigationLayout:
+        MDNavigationDrawer:
+            id: nav_drawer
+            radius: (0, 16, 16, 0)
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDNavigationDrawerMenu:
+                    OneLineIconListItem:
+                        text: "Beenden"
+                        on_press: app.stop()
+                        IconLeftWidget:
+                            icon: "arrow-left-bold-box-outline"
+                            on_press: app.stop()
+
+                    OneLineIconListItem:
+                        text: "https://www.youtube.com/"
+                        on_press: root.open_url()
+                        IconLeftWidget:
+                            icon: "link"
+                            on_press: root.open_url()
+
+<OpenFile>
+    canvas.before:
+        Color:
+            rgba: 100,100,100,0.15
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    MDTopAppBar:
+        pos_hint:{"top":1}
+        #left_action_items: [["arrow-left", lambda x: app.change_screen('Auswahl')],['menu', lambda x: nav_drawer2.set_state("open")]]
+        left_action_items: [["arrow-left", lambda x: app.change_screen('Auswahl')]]
+        right_action_items: [["folder-plus", lambda x: root.createPopup()]]
+        elevation: 2
+
+    FloatLayout:
+        Button:
+            size_hint:None,None
+            pos_hint: {"x":0.4, "top":0.13}
+            width: root.width*(1/4)
+            size_hint_y:0.07
+            font_size: (root.width + root.height) / 8**2
+            text: "Öffnen"
+            on_press:
+                app.change_screen('Auswahl')
+                root.openFile(filechooser.path,filechooser.selection)
+
+        FileChooserIconView:
+            id:filechooser
+            pos_hint: {"x":0.01, "top":0.87}
+            size_hint_y: 0.7
+            rootpath:"/storage/emulated/0/" if platform == "android" else "/"
+
+        #MDNavigationLayout:
+        #    MDNavigationDrawer:
+        #        id: nav_drawer2
+        #        radius: (0, 16, 16, 0)
+        #        MDBoxLayout:
+        #            orientation: 'vertical'
+        #            MDNavigationDrawerMenu:
+        #                OneLineIconListItem:
+        #                    text: "Interner Speicher"
+        #                    on_press:
+        #                        filechooser.path = "/storage/emulated/0/" if platform == "android" else "/"
+        #                        filechooser._update_files()
+        #                   IconLeftWidget:
+        #                        icon: "folder"
+        #                        on_press:
+        #                           filechooser.path = "/storage/emulated/0/" if platform == "android" else "/"
+        #                            filechooser._update_files()
+        #               OneLineIconListItem:
+        #                    text: "SD-Karte"
+        #                   on_press:
+        #                        filechooser.path = "/sdcard/" if platform == "android" else "/"
+        #                        filechooser._update_files()
+        #                    IconLeftWidget:
+        #                        icon: "sd"
+        #                        on_press:
+        #                            filechooser.path = "/sdcard/" if platform == "android" else "/"
+        #                            filechooser._update_files()
+
+
+<Seite_2>
+    canvas.before:
+        Color:
+            rgba: 100,100,100,0.15
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+    label:label.__self__
+    percent:percent.__self__
+    pb_1:pb_1.__self__
+    percent2:percent2.__self__
+    pb_2:pb_2.__self__
+    btn:btn.__self__
+    btn2:btn2.__self__
+    btn3:btn3.__self__
+
+    MDTopAppBar:
+        pos_hint:{"top":1}
+        left_action_items: [["arrow-left", lambda x: [app.stop_update(),root.manager.ids.data_tab.resetBtn(),app.change_screen('Auswahl')]]]
+        right_action_items: [["printer",lambda x: app.print_List()],["update", lambda x: [app.add_datatable(root.manager.ids.main.getData()),root.manager.ids.data_tab.resetBtn()]]]
+        elevation: 2
+
+    FloatLayout:
+        Label:
+            size_hint: 0.38,0.12
+            pos_hint: {"x":0.01, "top":0.295}
+            font_size: (root.width + root.height) / 8**2
+            text:"Fortschritt:"
+            text_size:self.size
+            halign:"center"
+
+        Label:
+            id: percent
+            size_hint:0.58,0.12
+            pos_hint: {"x":0.4, "top":0.315}
+            font_size: (root.width + root.height) / 10**2
+            text:"0 %"
+            text_size:self.size
+            halign:"center"
+
+        MDProgressBar:
+            id:pb_1
+            min:0
+            max:100
+            pos_hint: {"x":0.4, "top":0.195}
+            size_hint_x: 0.58
+
+        Label:
+            size_hint: 0.38, 0.12
+            pos_hint: {"x":0.01, "top":0.245}
+            font_size: (root.width + root.height) / 8**2
+            text:"Gesamtfortschritt:"
+            text_size:self.size
+            halign:"center"
+
+        Label:
+            id: percent2
+            size_hint:0.58,0.12
+            pos_hint: {"x":0.4, "top":0.265}
+            font_size: (root.width + root.height) / 10**2
+            text:"0 %"
+            text_size:self.size
+            halign:"center"
+
+        MDProgressBar:
+            id:pb_2
+            min:0
+            max:100
+            pos_hint: {"x":0.4, "top":0.145}
+            size_hint_x: 0.58
+
+        Button:
+            id:btn
+            text: "Start"
+            size_hint:0.25,0.06
+            pos_hint: {"x":0.25, "top":0.1}
+            font_size: (root.width + root.height) / 8**2
+            on_press:
+                app.Start() if self.text == "Start" else app.Weiter()
+
+        Button:
+            id:btn2
+            disabled: True
+            size_hint:0.25,0.06
+            pos_hint: {"x":0.51, "top":0.1}
+            font_size: (root.width + root.height) / 8**2
+            text: "Pause"
+            on_press: app.Pause()
+
+        Button:
+            id:btn3
+            size_hint:0.25,0.06
+            pos_hint: {"x":1.5, "top":0.1}
+            font_size: (root.width + root.height) / 8**2
+            text: "Beenden"
+            on_press: app.stop()
+
+        FloatLayout:
+            id: data_layout
+
+        Label:
+            id:label
+            size_hint_y: 0.2
+            pos_hint: {"x":0.01, "top":0.7}
+            font_size: (root.width + root.height) / 8**2
+            text_size:self.size
+            halign:"center"

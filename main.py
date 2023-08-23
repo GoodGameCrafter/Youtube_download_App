@@ -24,8 +24,8 @@ import time
 import threading
 import codecs
 from pytube import (YouTube,request)
-#from android.permissions import request_permissions, Permission
-#request_permissions([Permission.INTERNET,Permission.WRITE_EXTERNAL_STORAGE,Permission.READ_EXTERNAL_STORAGE])
+from android.permissions import request_permissions, Permission
+request_permissions([Permission.INTERNET,Permission.WRITE_EXTERNAL_STORAGE,Permission.READ_EXTERNAL_STORAGE])
 
 class WindowManager(ScreenManager):
     pass

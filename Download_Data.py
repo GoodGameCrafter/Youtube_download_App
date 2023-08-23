@@ -25,9 +25,9 @@ class getLinks():
 
     def playlist(self,link:str)->(list,list,dict):  # Prüft ob Link der Playlist gültig ist
         url = "https://www.youtube.com/watch?v="
-        playlist_link = link.split("list=")[1].strip()
         num = 0
         try:
+            playlist_link = link.split("list=")[1].strip()
             videos = scrapetube.get_playlist(playlist_link)
             for video in videos:
                 video_link = url + video['videoId']
@@ -38,10 +38,12 @@ class getLinks():
                 self.Links.append(link)
                 self.Fehler.append(link)
                 self.data[link] = ["Playlist nicht verfügbar/ nicht öffentlich","Fehler",False]
-        except:
+        except Exception as e:
             self.Links.append(link)
             self.Fehler.append(link)
-            self.data[link] = ["Keine Internetverbindung","Fehler",False]
+            self.data[link] = ["Keine Internetverbindung", "Fehler", False]
+            if "out of range" in e:
+                self.data[link] = ["Playlist nicht verfügbar/ nicht öffentlich","Fehler",False]
         return self.Links,self.Fehler,self.data
 
     def new_vid(self,link:str,max_results:int = 3)->(list,list,dict):

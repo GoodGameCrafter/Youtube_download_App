@@ -17,15 +17,15 @@ from kivy.core.window import Window
 Window.softinput_mode = "below_target"
 import os
 import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
+ssl._create_default_https_context = ssl._create_unverified_context #https überprüfung umgehen
 import webbrowser
 import Download_Data
 import time
 import threading
 import codecs
 from pytube import (YouTube,request)
-from android.permissions import request_permissions, Permission
-request_permissions([Permission.INTERNET,Permission.WRITE_EXTERNAL_STORAGE,Permission.READ_EXTERNAL_STORAGE])
+#from android.permissions import request_permissions, Permission
+#request_permissions([Permission.INTERNET,Permission.WRITE_EXTERNAL_STORAGE,Permission.READ_EXTERNAL_STORAGE])
 
 class WindowManager(ScreenManager):
     pass
@@ -44,7 +44,6 @@ class Seite_1(Screen):
         self.textinput = ObjectProperty(None)
         self.textinput2 = ObjectProperty(None)
         self.checked = False            # wenn check-entry erfolgreich
-        self.file_filter = "is_dir"
 
     def add_Dropdown(self,val:int):
         if val == 0:
@@ -82,6 +81,7 @@ class Seite_1(Screen):
             self.enable_res()
         elif val == 2:
             self.enable_slider()
+        self.menu.dismiss()
 
     def open_url(self):                 #öffnet ausgewählten Link
         webbrowser.open_new_tab("https://www.youtube.com/")
@@ -118,24 +118,31 @@ class Seite_1(Screen):
         if not os.path.exists(destination) or destination == "":
             self.error_popup(f"{self.label.text}\nDateipfad ist ungültig")
             return
+        try:
+            with open(f"{destination}/check.txt", "w") as f:
+                f.write("123Test")
+            os.remove(f"{destination}/check.txt")
+        except:
+            self.error_popup(f"{self.label.text}\nKein Zugriff auf gewählten Ordner möglich")
+            return
         if input == "":
             self.error_popup(f"{self.label2.text}\nUngültige Eingabe")
             return
-        if input[-4:] == ".txt" and mode in["einzelnes Video herunterladen","Playlist herunterladen"]:
+        if input[-4:] in [".txt",".odt",".docx"] and mode in["einzelnes Video herunterladen","Playlist herunterladen"]:
             self.error_popup(f"{self.label2.text}\nUngültige Eingabe")
             return
         elif mode == "Videolinks aus Dokument importieren":
             if input[-4:] != ".txt":
-                self.error_popup(f"{self.label2.text}\nDateiformat wird nicht\nunterstützt!")
+                self.error_popup(f"{self.label2.text}\nDateiformat wird nicht unterstützt!(->.txt,.odt.docx)")
                 return
             elif not os.path.exists(input):
                 self.error_popup(f"{self.label2.text}\nDateipfad ist ungültig")
                 return
         elif mode == "Neueste Videos":
-            if os.path.exists(input) and input[-4:] != ".txt":
-                self.error_popup(f"{self.label2.text}\nDateiformat wird nicht\nunterstützt!")
+            if os.path.exists(input) and input[-4:] not in [".txt",".odt",".docx"]:
+                self.error_popup(f"{self.label2.text}\nDateiformat wird nicht unterstützt!(->.txt,.odt.docx)")
                 return
-            elif not os.path.exists(input) and input[-4:] == ".txt":
+            elif not os.path.exists(input) and input[-4:] in [".txt",".odt",".docx"]:
                 self.error_popup(f"{self.label2.text}\nDateipfad ist ungültig")
                 return
         self.manager.current = "Übersicht"
@@ -154,9 +161,10 @@ class Seite_1(Screen):
             links, fehler, data = func(input)
         return links, fehler, data
 
-    def error_popup(self,text:str):
+    def error_popup(self, text: str):
         pop = Popup(title='Fehler',
-                    content=Label(text=text),
+                    content=Label(text=text, text_size=(self.width * 0.6, None),
+                                  size=self.size, halign='left', valign='center'),
                     size_hint=(0.7, 0.2))
         pop.open()
 
@@ -247,7 +255,7 @@ class Youtube_App(MDApp):
             use_pagination = True,
             rows_num = 5,
             pagination_menu_height="240dp",
-            pagination_menu_pos="auto",
+            pagination_menu_pos="center",
             elevation=2,
             background_color_header="#65275d",
             column_data=[
@@ -324,6 +332,7 @@ class Youtube_App(MDApp):
             icon = ("checkbox-marked-circle",[4 / 256, 159 / 256, 209 / 256, 1],f"{status}")
         else:
             icon = ("alert-circle",[1,0,0,1],f"{status}")
+            if link not in self.Fehler: self.Fehler.append(link)
         self.data_tables.row_data[index]= (f"{index + 1}",icon,titel)
 
     def initMainData(self):
@@ -364,20 +373,28 @@ class Youtube_App(MDApp):
         self.btn.disabled = False
         self.btn2.disabled = True
 
+    def popUp_2(self,titel:str,text:str):
+        pop = Popup(title=f"{titel}",
+                    content=Label(text=text, text_size=(self.root.width * 0.6, None),
+                                  size=self.root.size, halign='left', valign='center'),
+                    size_hint=(0.7, 0.25))
+        pop.open()
+
     def print_List(self):
         text = ""
         self.outpath = self.root.ids.main.ids.textinput.text
-        with open(f"{self.outpath}/Videoliste.txt","w") as f:
-            for link in self.Links:
-                status,titel,check = self.Data[link]
-                text+= f"{link} {titel}\n"
-            f.write(text)
+        try:
+            with codecs.open(f"{self.outpath}/Videoliste.txt","w","utf-8") as f:
+                for link in self.Links:
+                    status,titel,check = self.Data[link]
+                    text+= f"{link} {titel}\n"
+                f.write(text)
 
-        text = f"Liste gespeichert unter\n{self.outpath}/Videoliste.txt"
-        pop = Popup(title='Gespeichert',
-              content=Label(text=text),
-              size_hint=(0.7, 0.2))
-        pop.open()
+            text = f"Liste gespeichert unter:\n{self.outpath}/Videoliste.txt"
+            self.popUp_2("Gespeichert",text)
+        except Exception as e:
+            text =f"Beim Speichern ist ein Fehler aufgetreten:\n{e}"
+            self.popUp_2("Fehler",text)
 
     def Loop_Start(self):
         if self.changed:
@@ -388,6 +405,13 @@ class Youtube_App(MDApp):
             self.stop_update()
             self.btn.pos_hint = self.btn2.pos_hint = {"x":1.5, "top":0.1}
             self.btn3.pos_hint = {"x":0.4, "top":0.1}
+            if self.Fehler != []:
+                text = ""
+                with codecs.open(f"{self.outpath}/Fehlgeschlagene_Downloads.txt", "w", "utf-8") as f:
+                    for link in self.Fehler:
+                        status, titel, check = self.Data[link]
+                        text += f"{link} {titel}\n"
+                    f.write(text)
             return
         self.btn2.disabled = False
         status,title,check = self.Data[link:= self.Links[self.index]]
@@ -401,7 +425,7 @@ class Youtube_App(MDApp):
             return self.Loop_End()
         for j in range(6):  # Während der Counter läuft kann pausiert werden
             time.sleep(1.0)
-            self.label.text = f"Download beginnt in:{str(5 - j)}s"
+            self.label.text = f"Download beginnt in: {str(5 - j)}s"
             if self.pause:  # Kontrolle ob pausiert
                 self.btn.disabled = False
                 self.btn2.disabled = True
@@ -420,13 +444,13 @@ class Youtube_App(MDApp):
             t2.start()
 
     def Loop_End(self):
-        status,title,check= self.Data[link:= self.Links[self.index]]
+        status, title, check = self.Data[link := self.Links[self.index]]
         self.pb_1.value = 100
-        self.percent.text ="Abgeschlossen"
-        self.pb_2.value = int(((self.index + 1) / len(self.Links)) * 100)
-        self.percent2.text =str(int(((self.index + 1) / len(self.Links)) * 100)) + " %"
-        self.updateRow(self.index, link, (status,title))
+        self.percent.text = "Abgeschlossen"
+        self.updateRow(self.index, link, (status, title))
         if not self.timeout:
+            self.pb_2.value = int(((self.index+1) / len(self.Links)) * 100)
+            self.percent2.text = str(int(((self.index+1) / len(self.Links)) * 100)) + " %"
             self.index += 1
         return self.Loop_Start()
 
@@ -434,10 +458,7 @@ class Youtube_App(MDApp):
         self.timeout = True
         self.Data[self.Links[self.index]][0] = "Verbindung verloren"  # neuen Status setzen
         text = "Zeitüberschreitung bei der\nNetzwerkverbindung"
-        #pop = Popup(title='Fehler',
-                    #content=Label(text=text),
-                    #size_hint=(0.7, 0.2))
-        #pop.open()
+        self.popUp_2("Fehler", text)
         self.Pause()
         return self.Loop_End()
 
@@ -459,10 +480,7 @@ class Youtube_App(MDApp):
             except:
                 continue
         else:
-            return self.Timeout()
-        if self.youtubeObject.age_restricted:
-            self.Data[self.Links[self.index]][0] = "Video ist altersbeschränkt"
-            return self.Loop_End()
+            Clock.schedule_once(lambda dt: self.Timeout(), 0.5)
         for i in ["/", ":", "*", "<", ">", "|", "?", '"', "\\"]:
             title = title.replace(i, "")
         title = title.strip()
@@ -496,7 +514,7 @@ class Youtube_App(MDApp):
                 self.Data[self.Links[self.index]][0] = "Abgeschlossen"
             except:
                 os.remove(f"{self.outpath}/{title}.mp4")
-                return self.Timeout()
+                Clock.schedule_once(lambda dt: self.Timeout(), 0.5)
         except Exception as e:
             self.Data[self.Links[self.index]][0] = "Fehler"
             if "age restricted" in str(e):
@@ -513,10 +531,13 @@ class Youtube_App(MDApp):
             audio.download(f"{self.outpath}",f"{title}.mp3", timeout=10)
             self.Data[self.Links[self.index]][0] = "Abgeschlossen"
             return self.Loop_End()
-        except:
+        except Exception as e:
             if os.path.exists(f"{self.outpath}/{title}.mp3"):
                 os.remove(f"{self.outpath}/{title}.mp3")
-            return self.Timeout()
+            if "age restricted" in str(e):
+                self.Data[self.Links[self.index]][0] = "Video ist altersbeschränkt"
+                return self.Loop_End()
+            Clock.schedule_once(lambda dt: self.Timeout(), 0.5)
 
 if __name__ == "__main__":
     Youtube_App().run()

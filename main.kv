@@ -263,12 +263,12 @@
         #               OneLineIconListItem:
         #                    text: "SD-Karte"
         #                   on_press:
-        #                        filechooser.path = "/sdcard/" if platform == "android" else "/"
+        #                        filechooser.path = "/sdcard" if platform == "android" else "/"
         #                        filechooser._update_files()
         #                    IconLeftWidget:
         #                        icon: "sd"
         #                        on_press:
-        #                            filechooser.path = "/sdcard/" if platform == "android" else "/"
+        #                            filechooser.path = "/sdcard" if platform == "android" else "/"
         #                            filechooser._update_files()
 
 
@@ -292,8 +292,8 @@
 
     MDTopAppBar:
         pos_hint:{"top":1}
-        left_action_items: [["arrow-left", lambda x: [app.stop_update(),root.manager.ids.data_tab.resetBtn(),app.change_screen('Auswahl')]]]
-        right_action_items: [["printer",lambda x: app.print_List()],["update", lambda x: [app.add_datatable(root.manager.ids.main.getData()),root.manager.ids.data_tab.resetBtn()]]]
+        left_action_items: [["arrow-left", lambda x: [app.stop_update(),root.manager.ids.data_tab.resetBtn(),app.change_screen('Auswahl')],"Hauptmenü"]]
+        right_action_items: [["printer",lambda x: app.print_List(),"Liste drucken"],["update", lambda x: [app.add_datatable(root.manager.ids.main.getData()),root.manager.ids.data_tab.resetBtn()],"Aktualisieren"]]
         elevation: 2
 
     FloatLayout:
